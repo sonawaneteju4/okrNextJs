@@ -1,7 +1,9 @@
 "use client";
+import { useRouter } from "next/navigation"; // Use useRouter from next/navigation
 import { useState } from "react";
 
 export default function Login() {
+  const router = useRouter(); // Initialize the router
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -15,8 +17,7 @@ export default function Login() {
     e.preventDefault();
     // Perform login logic here
     try {
-      const res = await fetch("http://localhost:3000/users/login", {
-        // Update port here
+      const res = await fetch("http://localhost:3001/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -31,8 +32,19 @@ export default function Login() {
 
       const data = await res.json();
       console.log(data);
+      if (data.success) {
+        // Save user data in session storage
+        sessionStorage.setItem("user", JSON.stringify(data.data.user));
+        sessionStorage.setItem("accessToken", data.data.accessToken);
+        sessionStorage.setItem("refreshToken", data.data.refreshToken);
+        console.log("User logged in successfully:", data.message);
+        router.push("/"); // Use router.push to navigate to the home page
+      } else {
+        console.error("Login failed:", data.message);
+      }
     } catch (error) {
       console.log("Failed to fetch", error);
+      alert("Invalid user credentials");
     }
     console.log(formData);
   };
